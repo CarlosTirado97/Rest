@@ -2,9 +2,13 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const _ = require('underscore');
 const Usuario = require('../modelos/usuario');
+const { verificaToken, AuthAdmin } = require('../middlewares/autenticacion');
 const app = express();
 
-app.get('/usuario', (req, res) => {
+
+app.get('/usuario', verificaToken, (req, res) => {
+
+
 
     let desde = req.query.desde || 0;
     desde = Number(desde);
@@ -34,7 +38,7 @@ app.get('/usuario', (req, res) => {
         });
 
 })
-app.post('/usuario', (req, res) => {
+app.post('/usuario', [verificaToken, AuthAdmin], (req, res) => {
     let body = req.body;
 
     let usuario = new Usuario({
@@ -60,7 +64,7 @@ app.post('/usuario', (req, res) => {
 
 
 })
-app.put('/usuario/:id', (req, res) => {
+app.put('/usuario/:id', [verificaToken, AuthAdmin], (req, res) => {
     let id = req.params.id;
     let body = _.pick(req.body, ['nombre', 'email', 'img', 'role', 'estado']);
 
@@ -80,7 +84,7 @@ app.put('/usuario/:id', (req, res) => {
 
 
 })
-app.delete('/usuario/:id', (req, res) => {
+app.delete('/usuario/:id', [verificaToken, AuthAdmin], (req, res) => {
 
     let id = req.params.id;
 
@@ -95,12 +99,12 @@ app.delete('/usuario/:id', (req, res) => {
                 err
             })
         }
-        if (usuarioEliminado.estado === false) {
-            return res.status(400).json({
-                ok: false,
-                err: 'Usuario no encontrado'
-            })
-        }
+        // if (usuarioEliminado.estado === false) {
+        //     return res.status(400).json({
+        //         ok: false,
+        //         err: 'Usuario no encontrado'
+        //     })
+        // }
         res.json({
             ok: true,
             usuarioEliminado
